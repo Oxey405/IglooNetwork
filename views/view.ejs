@@ -11,5 +11,20 @@
 </head>
 <body>
     <h1 style="font-weight: 500;">Welcome on the Igloo of <i style="font-weight: bold;"><%=IglooName%></i></h1>
+    <center>
+        <button onclick="generateKeysProcess()">Sign in</button>
+        <div class="signin-div hidden" id="signindiv">
+            <h1>Join this community server. Your data will be only stored on your computer</h1>
+
+            <input type="text" id="uname" placeholder="Enter a username here">
+            
+            <p>No password required, store this file safely.</p>
+
+            <button onclick="generateRSAKeyPair(generateKeysReturn)">Generate file</button>
+            
+            <a id="dlcreds" download="igloo-creds.json" href="">Download creditentials file</a>
+        </div>
+    </center>
+
 </body>
 </html>

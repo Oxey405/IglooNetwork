@@ -4,3 +4,19 @@ body {
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
 }
+.hidden {
+    display: none;
+}
+.signin-div {
+    background-color: #313131;
+    border-radius: 10px;
+    width: 65%;
+}
+a {
+    color: rgb(127, 219, 255);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+
+}

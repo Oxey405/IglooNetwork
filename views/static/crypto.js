@@ -1,4 +1,9 @@
-// Crypto
+/**
+ * This software was made by Oxey405
+ * (c) 2022 Oxey405 <Oxey405@gmail.com>
+ * Released under MIT License
+ * NO WARANTY INCLUDED ! (And no battery too )
+ */
 /**
  * Crypto web module in itself
  */
@@ -12,15 +17,23 @@ var publicKey;
  */
 var privateKey;
 
+//Those are the signatures that are stored
 var MsgSignature;
 var MsgSignatureExported;
 
-//Functions
+/**
+ * The config variable
+ */
+var config = {authorName:"",pubKey:"",privKey:""};
+
+
+
+// ----------------------------------- HERE STARTS THE "TOOLS" FUNCTIONS -----------------------------------
 
 /**
  * Generates a RSA-PSS KeyPair
  */
-function generateRSAKeyPair() {
+function generateRSAKeyPair(callback) {
     window.crypto.subtle.generateKey(
         {
         name: "RSA-PSS",
@@ -34,10 +47,12 @@ function generateRSAKeyPair() {
       ).then((keyPair) => {
         publicKey = keyPair.publicKey;
         privateKey = keyPair.privateKey;
+        callback();
       });
     
     
 }
+
 
 /**
  * encodes the message in UTF-8
@@ -103,16 +118,8 @@ async function signMessage(msg, privateKey) {
  * @param {ArrayBuffer} signature 
  */
 var msgObject;
-function sendMessageToServer(message, publicKey, signature) {
-    exportCryptoKey(publicKey,"spki").then((exportedKey) => {
-        console.log("hello!");
-        var msgObjectText = `{"message":"${message}", "signerPublicKey":"${exportedKey}", "signature":"${getMessageEncoding(signature)}"}`;
-        console.log(msgObjectText);
-        msgObject = JSON.parse(msgObjectText);
-        console.log(msgObject);
-    })
 
-}
+
 //Converts String to ArrayBuffer
 function str2ab(str) {
     const buf = new ArrayBuffer(str.length);
@@ -126,6 +133,7 @@ function str2ab(str) {
 function ab2str(buf) {
     return String.fromCharCode.apply(null, new Uint8Array(buf));
   }
+
 
 async function exportCryptoKey(key, algo) {
     const exported = await window.crypto.subtle.exportKey(
@@ -162,3 +170,40 @@ async function exportCryptoKey(key, algo) {
       ["verify"]
     );
   }
+
+// ----------------------------------- HERE STARTS THE "INTERACTIONS" FUNCTIONS -----------------------------------
+
+  function generateKeysProcess() {
+    var signinDiv = document.getElementById("signindiv");
+      signinDiv.className = "signin-div";
+  }
+  function generateKeysReturn() {
+      var exp_PublicKey;
+      var exp_PrivateKey;
+      //Export public key (spki required)
+      exportCryptoKey(publicKey,"spki").then((exportedKey) => {
+        exp_PublicKey = exportedKey ;
+          //then export private key (pkcs#8 required)
+          exportCryptoKey(privateKey,"pkcs8").then((exportedKey) => {
+            exp_PrivateKey = exportedKey ;
+            var jsonKeyWallet = `{"uname":"${document.getElementById("uname").value}","privkey":"${exp_PrivateKey}","pubKey":"${exp_PublicKey}"}`
+            var blob = new Blob([jsonKeyWallet],
+            { type: "text/plain;charset=utf-8"});
+            console.log(jsonKeyWallet);
+            document.getElementById("dlcreds").href = URL.createObjectURL(blob);
+        });
+      });
+  
+
+}
+
+  function sendMessageToServer(message, publicKey, signature) {
+    exportCryptoKey(publicKey,"spki").then((exportedKey) => {
+        console.log("hello!");
+        var msgObjectText = `{"message":"${message}", "signerPublicKey":"${exportedKey}", "signature":"${getMessageEncoding(signature)}"}`;
+        console.log(msgObjectText);
+        msgObject = JSON.parse(msgObjectText);
+        console.log(msgObject);
+    })
+
+}
