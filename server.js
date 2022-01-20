@@ -7,7 +7,9 @@ const path = require('path');
  */
 const serverInfo = {
     IglooName:"Default Igloo name",
-    description:"Description"
+    description:"Description",
+    GreetsMessageSign:"Hey ! Welcome on this Igloo ! Generate your creditentials here !",
+    GreetsMessageLogin:"Hey ! Welcome back on the Igloo... Can I have your creds. please ?"
 }
 //start server
 const app = express()
@@ -29,7 +31,10 @@ app.get('/', (req, res) => {
     
         //generate and send a view
         res.render('view', {
-            IglooName:serverInfo.IglooName
+            IglooName:serverInfo.IglooName,
+            GreetsMessageSign:serverInfo.GreetsMessageSign,
+            description:serverInfo.description,
+            GreetsMessageLogin:serverInfo.GreetsMessageLogin
         })
     
 

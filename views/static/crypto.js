@@ -21,11 +21,14 @@ var privateKey;
 var MsgSignature;
 var MsgSignatureExported;
 
+
+var definedUname;
 /**
  * The config variable
  */
 var config = {authorName:"",pubKey:"",privKey:""};
 
+var creds;
 
 
 // ----------------------------------- HERE STARTS THE "TOOLS" FUNCTIONS -----------------------------------
@@ -147,11 +150,11 @@ async function exportCryptoKey(key, algo) {
   }
 
   /**
-   * Creates a CryptoKey object from a PEM string
+   * Creates a CryptoKey object from a PEM string (public key)
    * @param {String} pem 
-   * @returns 
+   * @returns {CryptoKey} publicKey
    */
-  function importPublicKey(pem) {
+  async function importPublicKey(pem) {
 
     const pemContents = pem;
     // base64 decode the string to get the binary data
@@ -171,11 +174,61 @@ async function exportCryptoKey(key, algo) {
     );
   }
 
+  /**
+   * Creates a CryptoKey from a PEM string (private key)
+   * @param {String} pem 
+   * @returns {CryptoKey} privateKey
+   */
+  function importPrivateKey(Privpem) {
+
+    const pemContents = Privpem;
+    // base64 decode the string to get the binary data
+    const binaryDerString = window.atob(pemContents);
+    // convert from a binary string to an ArrayBuffer
+    const binaryDer = str2ab(binaryDerString);
+
+    return window.crypto.subtle.importKey(
+      "pkcs8",
+      binaryDer,
+      {
+        name: "RSA-PSS",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([1, 0, 1]),
+        hash: "SHA-256",
+      },
+      true,
+      ["sign"]
+    );
+  }
+
+
 // ----------------------------------- HERE STARTS THE "INTERACTIONS" FUNCTIONS -----------------------------------
 
+var loginDiv = document.getElementById("logindiv");
+var signinDiv = document.getElementById("signindiv");
+
   function generateKeysProcess() {
-    var signinDiv = document.getElementById("signindiv");
+    if(signinDiv.className == "signin-div") {
+      signinDiv.className = "hidden signin-div";
+
+
+    } else {
       signinDiv.className = "signin-div";
+      loginDiv.className = "hidden signin-div";
+
+
+    }
+  }
+  function loadKeysProcess() {
+    if(loginDiv.className == "signin-div") {
+      loginDiv.className = "hidden signin-div";
+
+    } else {
+      loginDiv.className = "signin-div";
+      signinDiv.className = "hidden signin-div";
+
+
+    }
   }
   function generateKeysReturn() {
       var exp_PublicKey;
@@ -186,7 +239,7 @@ async function exportCryptoKey(key, algo) {
           //then export private key (pkcs#8 required)
           exportCryptoKey(privateKey,"pkcs8").then((exportedKey) => {
             exp_PrivateKey = exportedKey ;
-            var jsonKeyWallet = `{"uname":"${document.getElementById("uname").value}","privkey":"${exp_PrivateKey}","pubKey":"${exp_PublicKey}"}`
+            var jsonKeyWallet = `{"uname":"${document.getElementById("uname").value}","privKey":"${exp_PrivateKey}","pubKey":"${exp_PublicKey}"}`
             var blob = new Blob([jsonKeyWallet],
             { type: "text/plain;charset=utf-8"});
             console.log(jsonKeyWallet);
@@ -205,5 +258,29 @@ async function exportCryptoKey(key, algo) {
         msgObject = JSON.parse(msgObjectText);
         console.log(msgObject);
     })
+
+}
+var credsFileLoaded ;
+document.getElementById("credsfile").addEventListener('change', function() {
+  var CredsFile = new FileReader();
+  CredsFile .onload=function() {
+      credsFileLoaded = CredsFile.result;
+  }
+  CredsFile.readAsText(this.files[0]);
+});
+
+async function importCredsProcess() {
+  var credsToLoad = JSON.parse(credsFileLoaded);
+  console.log("creditentials file parsed");
+  creds = credsToLoad;
+
+  setTimeout(() => {
+     publicKey = importPublicKey(creds.pubKey);
+     privateKey = importPrivateKey(creds.privKey);
+    definedUname = credsFileLoaded.uname;
+    console.log("creditentials loaded !");
+  }, 500)
+
+
 
 }
