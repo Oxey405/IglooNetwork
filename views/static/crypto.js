@@ -21,7 +21,7 @@ var privateKey;
 var MsgSignature;
 var MsgSignatureExported;
 
-
+//Can change anytime.
 var definedUname;
 /**
  * The config variable
@@ -113,6 +113,7 @@ async function signMessage(msg, privateKey) {
         sendMessageToServer(msg, publicKey, signature);
       })
 }
+
 /**
  * Create a JSON object containing the message, the public key and the signature
  * then try to send it to the connected server at port 1801 or other if specified
@@ -171,7 +172,7 @@ async function exportCryptoKey(key, algo) {
       },
       true,
       ["verify"]
-    );
+    )
   }
 
   /**
@@ -187,7 +188,7 @@ async function exportCryptoKey(key, algo) {
     // convert from a binary string to an ArrayBuffer
     const binaryDer = str2ab(binaryDerString);
 
-    return window.crypto.subtle.importKey(
+     return window.crypto.subtle.importKey(
       "pkcs8",
       binaryDer,
       {
@@ -242,8 +243,9 @@ var signinDiv = document.getElementById("signindiv");
             var jsonKeyWallet = `{"uname":"${document.getElementById("uname").value}","privKey":"${exp_PrivateKey}","pubKey":"${exp_PublicKey}"}`
             var blob = new Blob([jsonKeyWallet],
             { type: "text/plain;charset=utf-8"});
-            console.log(jsonKeyWallet);
             document.getElementById("dlcreds").href = URL.createObjectURL(blob);
+            definedUname = document.getElementById("uname").value;
+
         });
       });
   
@@ -253,11 +255,11 @@ var signinDiv = document.getElementById("signindiv");
   function sendMessageToServer(message, publicKey, signature) {
     exportCryptoKey(publicKey,"spki").then((exportedKey) => {
         console.log("hello!");
-        var msgObjectText = `{"message":"${message}", "signerPublicKey":"${exportedKey}", "signature":"${getMessageEncoding(signature)}"}`;
+        var msgObjectText = `{"message":"${message}", "signerPublicKey":"${exportedKey}", "signature":"${getMessageEncoding(signature)}","uname":"${definedUname}","type":"post"}`;
         console.log(msgObjectText);
         msgObject = JSON.parse(msgObjectText);
-        console.log(msgObject);
-    })
+      sendMessageObjectToServ(msgObject);
+      })
 
 }
 var credsFileLoaded ;
@@ -273,10 +275,11 @@ async function importCredsProcess() {
   var credsToLoad = JSON.parse(credsFileLoaded);
   console.log("creditentials file parsed");
   creds = credsToLoad;
+  goToMain();
 
-  setTimeout(() => {
-     publicKey = importPublicKey(creds.pubKey);
-     privateKey = importPrivateKey(creds.privKey);
+  setTimeout(async () => {
+     publicKey = await importPublicKey(creds.pubKey);
+     privateKey = await importPrivateKey(creds.privKey);
     definedUname = credsFileLoaded.uname;
     console.log("creditentials loaded !");
   }, 500)
@@ -284,3 +287,46 @@ async function importCredsProcess() {
 
 
 }
+
+function goToMain() {
+  //Delete the sign in and log in button
+  document.getElementById("sign-and-log-in").remove();
+}
+
+
+
+// ----------------------------------- HERE STARTS THE API CALLER -----------------------------------
+
+let socket ;
+var uid ;
+function establishConnectionToServer() {
+// Create WebSocket connection.
+var serverIP;
+if(serverIP == "" || serverIP == undefined) {
+    serverIP = window.location.hostname;
+}
+ socket = new WebSocket('ws://'+serverIP+':2007');
+// Connection opened
+socket.addEventListener('open', function (event) {
+    socket.send('{"type":"connectStatus","content":"connected"}');
+});
+
+
+// Listen for messages
+socket.addEventListener('message', function (event) {
+    console.log("recieved " + event);
+    var serverMsg ;
+    try {
+        serverMsg = JSON.parse(event.data);
+        console.log(serverMsg);
+    } catch (error) {
+        console.error("can't parse response from server");
+    }
+});
+
+}
+
+function sendMessageObjectToServ(msgObject) {
+  socket.send(JSON.stringify(msgObject));
+  console.log("sent ws message to server containing msgObject");
+} 

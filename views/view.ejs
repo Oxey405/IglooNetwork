@@ -10,32 +10,36 @@
 </head>
 <body>
     <h1 style="text-align: center;font-weight: 500;">Welcome on the Igloo of <i style="font-weight: bold;"><%=IglooName%></i></h1>
-    <h2 style="text-align: center;">Please Create new creditentials or log in with your creditentials.</h2>
     <center>
-        <button class="signbutton" onclick="generateKeysProcess()">Sign in</button>
-        <button class="signbutton" onclick="loadKeysProcess()">Log in</button>
+        <div id="sign-and-log-in">
+            <h2 style="text-align: center;">Please Create new creditentials or log in with your creditentials.</h2>
 
-        <div class="hidden signin-div" id="signindiv">
-            <h1 style="padding-top: 5vh;"><%=GreetsMessageSign%></h1>
-            
-            <input type="text" id="uname" placeholder="Enter a username here">
-            
-            <p>No password required, store this file safely.</p>
-
-            <button onclick="generateRSAKeyPair(generateKeysReturn)">Generate file</button>
-            
-            <a style="padding:5vh;" id="dlcreds" download="igloo-creds.json" href="">Download creditentials file</a>
+            <button class="signbutton" onclick="generateKeysProcess()">Sign in</button>
+            <button class="signbutton" onclick="loadKeysProcess()">Log in</button>
+    
+            <div class="hidden signin-div" id="signindiv">
+                <h1 style="padding-top: 5vh;"><%=GreetsMessageSign%></h1>
+                
+                <input type="text" id="uname" placeholder="Enter a username here">
+                
+                <p>No password required, store this file safely.</p>
+    
+                <button onclick="generateRSAKeyPair(generateKeysReturn)">Generate file</button>
+                
+                <a onclick="goToMain();" style="padding:5vh;" id="dlcreds" download="igloo-creds.json" href="">Download creditentials file</a>
+            </div>
+            <div class="hidden signin-div" id="logindiv">
+                <h1 style="padding-top: 5vh;"><%=GreetsMessageLogin%></h1>
+                
+                
+                    <p>Load your file here.</p> 
+                    <input type="file" name="credsfile" id="credsfile"> 
+                    <br>
+                    <button style="margin:4vh;" onclick="importCredsProcess()">Load my creditentials</button>
+                    <div style="padding:2vh;"></div>
+            </div>
         </div>
-        <div class="hidden signin-div" id="logindiv">
-            <h1 style="padding-top: 5vh;"><%=GreetsMessageLogin%></h1>
-            
-            
-                <p>Load your file here.</p> 
-                <input type="file" name="credsfile" id="credsfile">
-                <br>
-                <button style="margin:4vh;" onclick="importCredsProcess()">Load my creditentials</button>
-                <div style="padding:2vh;"></div>
-        </div>
+       
     </center>
 
     <script src="static/crypto.js"></script>
